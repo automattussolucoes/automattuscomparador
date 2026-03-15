@@ -35,23 +35,34 @@ CREATE TABLE products (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
+-- Create Brands table
+CREATE TABLE brands (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  logo TEXT NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
 -- Set up Row Level Security (RLS)
 ALTER TABLE product_types ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE specifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for public read access
 CREATE POLICY "Allow public read access on product_types" ON product_types FOR SELECT USING (true);
 CREATE POLICY "Allow public read access on categories" ON categories FOR SELECT USING (true);
 CREATE POLICY "Allow public read access on specifications" ON specifications FOR SELECT USING (true);
 CREATE POLICY "Allow public read access on products" ON products FOR SELECT USING (true);
+CREATE POLICY "Allow public read access on brands" ON brands FOR SELECT USING (true);
 
 -- Create policies for authenticated write access
 CREATE POLICY "Allow authenticated write access on product_types" ON product_types FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated write access on categories" ON categories FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated write access on specifications" ON specifications FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated write access on products" ON products FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated write access on brands" ON brands FOR ALL USING (auth.role() = 'authenticated');
 
 -- Create a bucket for product images if it doesn't exist
 INSERT INTO storage.buckets (id, name, public) 

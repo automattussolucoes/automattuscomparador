@@ -32,6 +32,7 @@ export default function Admin() {
           <NavLink to="/admin/tipos" current={location.pathname === '/admin/tipos'}>Tipos de Produto</NavLink>
           <NavLink to="/admin/categorias" current={location.pathname === '/admin/categorias'}>Categorias</NavLink>
           <NavLink to="/admin/especificacoes" current={location.pathname === '/admin/especificacoes'}>Especificações</NavLink>
+          <NavLink to="/admin/marcas" current={location.pathname === '/admin/marcas'}>Marcas</NavLink>
         </aside>
         <main className="flex-1 p-8 bg-slate-50 dark:bg-slate-900/50">
           <Routes>
@@ -39,6 +40,7 @@ export default function Admin() {
             <Route path="/tipos" element={<ProductTypesAdmin />} />
             <Route path="/categorias" element={<CategoriesAdmin />} />
             <Route path="/especificacoes" element={<SpecificationsAdmin />} />
+            <Route path="/marcas" element={<BrandsAdmin />} />
           </Routes>
         </main>
       </div>
@@ -357,6 +359,132 @@ function CategoriesAdmin() {
         })}
         {displayedCategories.length === 0 && (
           <div className="p-8 text-center text-slate-500">Nenhuma categoria encontrada.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BrandsAdmin() {
+  const { brands, addBrand, deleteBrand, reorderBrands, uploadImage } = useAppStore();
+  const [name, setName] = useState('');
+  const [logo, setLogo] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setIsUploading(true);
+      const url = await uploadImage(e.target.files[0]);
+      if (url) {
+        setLogo(url);
+      } else {
+        alert('Erro ao fazer upload da logomarca.');
+      }
+      setIsUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !logo) {
+      alert('Por favor, preencha o nome e faça o upload da logomarca.');
+      return;
+    }
+    await addBrand({ name, logo });
+    setName('');
+    setLogo('');
+  };
+
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const sortedBrands = [...brands].sort((a, b) => a.orderIndex - b.orderIndex);
+    if (direction === 'up' && index > 0) {
+      const temp = sortedBrands[index];
+      sortedBrands[index] = sortedBrands[index - 1];
+      sortedBrands[index - 1] = temp;
+      await reorderBrands(sortedBrands.map(b => b.id));
+    } else if (direction === 'down' && index < sortedBrands.length - 1) {
+      const temp = sortedBrands[index];
+      sortedBrands[index] = sortedBrands[index + 1];
+      sortedBrands[index + 1] = temp;
+      await reorderBrands(sortedBrands.map(b => b.id));
+    }
+  };
+
+  const displayedBrands = [...brands].sort((a, b) => a.orderIndex - b.orderIndex);
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Marcas de Automação</h1>
+
+      <form onSubmit={handleAdd} className="flex flex-col gap-4 mb-8 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Nome da Marca (ex: Sonoff, Tuya)"
+            className="flex-1 h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+          />
+          <div className="flex-1">
+            {logo ? (
+              <div className="flex items-center gap-4 p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900">
+                <img src={logo} alt="Logo preview" className="h-10 w-10 object-contain rounded-md bg-white p-1 border border-slate-100 dark:border-slate-800" />
+                <span className="text-sm font-medium flex-1 truncate text-slate-600 dark:text-slate-400">Imagem carregada</span>
+                <button type="button" onClick={() => setLogo('')} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors text-slate-500">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <label className={`flex items-center justify-center gap-2 h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                <ImageIcon className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  {isUploading ? 'Fazendo upload...' : 'Fazer Upload da Logo'}
+                </span>
+                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+              </label>
+            )}
+          </div>
+          <button type="submit" className="h-10 px-6 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 flex items-center gap-2 justify-center">
+            <Plus className="w-4 h-4" /> Adicionar
+          </button>
+        </div>
+      </form>
+
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        {displayedBrands.map((brand, index) => (
+          <div key={brand.id} className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden bg-white p-1">
+                <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain" />
+              </div>
+              <span className="font-medium">{brand.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col mr-2">
+                <button
+                  onClick={() => handleMove(index, 'up')}
+                  disabled={index === 0}
+                  className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleMove(index, 'down')}
+                  disabled={index === displayedBrands.length - 1}
+                  className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                >
+                  <ArrowDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <button onClick={() => deleteBrand(brand.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+        {displayedBrands.length === 0 && (
+          <div className="p-8 text-center text-slate-500">Nenhuma marca cadastrada.</div>
         )}
       </div>
     </div>

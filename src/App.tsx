@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Camera, Lightbulb, Thermometer, Power, Cpu, BarChart, Megaphone, AtSign, X, Box, Speaker, Tv, Shield, Zap, Wifi, Video, Smartphone, Home, Settings, Monitor, Router, Plug, Instagram } from 'lucide-react';
+import { Lock, Camera, Lightbulb, Thermometer, Power, Cpu, BarChart, Megaphone, AtSign, X, Box, Speaker, Tv, Shield, Zap, Wifi, Video, Smartphone, Home, Settings, Monitor, Router, Plug, Instagram, MessageCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from './store';
@@ -11,7 +11,7 @@ export const iconMap: Record<string, React.ElementType> = {
 
 export default function App() {
   const navigate = useNavigate();
-  const { productTypes, categories, specifications, products, fetchData, isLoading } = useAppStore();
+  const { productTypes, categories, specifications, products, brands, fetchData, isLoading } = useAppStore();
 
   const [activeType, setActiveType] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
@@ -229,10 +229,54 @@ export default function App() {
             )}
           </div>
 
-          <div className="text-center mt-10">
+          {/* Brands Highlights section (Instagram style) */}
+          {brands && brands.length > 0 && (
+            <div className="w-full overflow-x-auto scrollbar-hide mt-16 mb-6 pb-4">
+              <div className="flex items-center justify-start md:justify-center gap-6 md:gap-8 min-w-max px-2">
+                {[...brands].sort((a, b) => a.orderIndex - b.orderIndex).map(brand => (
+                  <div key={brand.id} className="flex flex-col items-center gap-2 group cursor-pointer">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shadow-sm">
+                      <div className="w-full h-full rounded-full border-[1.5px] border-white dark:border-slate-900 bg-white overflow-hidden p-[6px] md:p-2 group-hover:scale-[0.97] transition-transform duration-300">
+                        <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain" />
+                      </div>
+                    </div>
+                    <span className="text-[10px] md:text-xs font-semibold text-slate-700 dark:text-slate-300 max-w-[80px] text-center truncate px-1">
+                      {brand.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* WhatsApp CTA */}
+          <div className="mt-12 w-full flex justify-center px-4">
+            <a
+              href="#"
+              title="Link ainda não gerado"
+              className="group flex flex-col md:flex-row items-center gap-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 pr-6 w-full max-w-3xl hover:border-[#25D366]/50 hover:bg-[#25D366]/5 transition-all duration-300"
+            >
+              <div className="bg-[#25D366]/10 p-3 rounded-full shrink-0 group-hover:bg-[#25D366]/20 transition-colors">
+                <MessageCircle className="w-6 h-6 text-[#25D366]" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm md:text-base">
+                  Grupo de Promoções de Automação
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5">
+                  Receba ofertas e cupons exclusivos todo dia no seu WhatsApp.
+                </p>
+              </div>
+              <span className="shrink-0 bg-[#25D366] text-white text-xs font-bold px-4 py-2 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity">
+                Participar
+              </span>
+            </a>
+          </div>
+
+          <div className="text-center mt-16">
             <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xs md:text-sm font-normal">
               Casa Inteligente . Tendências de Automação . Automatize sua Casa . Smart Home<br />
-              Seleção de Produtos . Melhores Ofertas . Achadinhos . Melhores Preços
+              Seleção de Produtos . Melhores Ofertas . Achadinhos . Promoções . Melhores Preços
             </p>
           </div>
         </div>
@@ -241,19 +285,18 @@ export default function App() {
       <footer className="mt-auto px-6 md:px-20 py-10 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
-            <Cpu className="w-5 h-5 text-primary" />
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               © 2026 Automattus
             </p>
           </div>
           <div className="flex gap-8">
-            <a href="#" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
+            <a href="https://www.automattus.com.br/projetos" target="_blank" rel="noopener noreferrer" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
               Projeto de Automação
             </a>
-            <a href="#" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
-              Serviço de Instalação
+            <a href="https://loja.automattus.com.br/servicos/" target="_blank" rel="noopener noreferrer" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
+              Serviços de Instalação
             </a>
-            <a href="#" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
+            <a href="https://loja.automattus.com.br" target="_blank" rel="noopener noreferrer" className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary">
               Loja Automattus
             </a>
             <button onClick={() => setShowLogin(true)} className="text-slate-500 dark:text-slate-400 text-xs font-medium hover:text-primary cursor-pointer">

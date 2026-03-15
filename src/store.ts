@@ -20,6 +20,13 @@ export interface Specification {
   orderIndex: number;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  logo: string;
+  orderIndex: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -35,6 +42,7 @@ interface AppState {
   categories: Category[];
   specifications: Specification[];
   products: Product[];
+  brands: Brand[];
   isLoading: boolean;
 
   fetchData: () => Promise<void>;
@@ -56,6 +64,10 @@ interface AppState {
   updateProduct: (id: string, prod: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
 
+  addBrand: (brand: Omit<Brand, 'id' | 'orderIndex'>) => Promise<void>;
+  deleteBrand: (id: string) => Promise<void>;
+  reorderBrands: (brandsId: string[]) => Promise<void>;
+
   uploadImage: (file: File) => Promise<string | null>;
 }
 
@@ -64,22 +76,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   categories: [],
   specifications: [],
   products: [],
+  brands: [],
   isLoading: false,
 
   fetchData: async () => {
     set({ isLoading: true });
     try {
-      const [typesRes, catsRes, specsRes, prodsRes] = await Promise.all([
+      const [typesRes, catsRes, specsRes, prodsRes, brandsRes] = await Promise.all([
         supabase.from('product_types').select('*').order('created_at', { ascending: true }),
         supabase.from('categories').select('*').order('created_at', { ascending: true }),
         supabase.from('specifications').select('*').order('order_index', { ascending: true }).order('created_at', { ascending: true }),
-        supabase.from('products').select('*').order('created_at', { ascending: true })
+        supabase.from('products').select('*').order('created_at', { ascending: true }),
+        supabase.from('brands').select('*').order('order_index', { ascending: true }).order('created_at', { ascending: true })
       ]);
 
       if (typesRes.error) throw typesRes.error;
       if (catsRes.error) throw catsRes.error;
       if (specsRes.error) throw specsRes.error;
       if (prodsRes.error) throw prodsRes.error;
+      if (brandsRes.error) throw brandsRes.error;
 
       set({
         productTypes: typesRes.data || [],
@@ -93,6 +108,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           link: p.link,
           categoryId: p.category_id,
           specs: p.specs || {}
+        })),
+        brands: (brandsRes.data || []).map(b => ({
+          id: b.id,
+          name: b.name,
+          logo: b.logo,
+          orderIndex: b.order_index
         }))
       });
     } catch (error) {
@@ -318,4 +339,45 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
     }
   },
+
+  addBrand: async (brand) => {
+    const maxOrder = Math.max(-1, ...get().brands.map(b => b.orderIndex));
+    const { data, error } = await supabase.from('brands').insert([{
+      name: brand.name,
+      logo: brand.logo,
+      order_index: maxOrder + 1
+    }]).select().single();
+
+    if (error) console.error('Error adding brand:', error);
+    if (!error && data) {
+      set((state) => ({
+        brands: [...state.brands, { id: data.id, name: data.name, logo: data.logo, orderIndex: data.order_index }]
+      }));
+    }
+  },
+
+  deleteBrand: async (id) => {
+    const { error } = await supabase.from('brands').delete().eq('id', id);
+    if (error) console.error('Error deleting brand:', error);
+    if (!error) {
+      set((state) => ({
+        brands: state.brands.filter(b => b.id !== id)
+      }));
+    }
+  },
+
+  reorderBrands: async (brandsId) => {
+    set((state) => {
+      const updatedList = brandsId.map((id, index) => {
+        const brand = state.brands.find(b => b.id === id)!;
+        return { ...brand, orderIndex: index };
+      });
+      return { brands: updatedList };
+    });
+
+    const updates = brandsId.map((id, index) => ({ id, order_index: index }));
+    for (const update of updates) {
+      await supabase.from('brands').update({ order_index: update.order_index }).eq('id', update.id);
+    }
+  }
 }));
