@@ -182,12 +182,24 @@ export default function App() {
                 className="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-primary/40 hover:ring-1 hover:ring-primary/20 transition-all duration-300"
               >
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 group-hover:bg-primary/5 dark:group-hover:bg-primary/10 transition-colors duration-300">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full aspect-square object-cover rounded-lg mb-4"
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="relative">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full aspect-square object-cover rounded-lg mb-4"
+                      referrerPolicy="no-referrer"
+                    />
+                    {product.badge === 'melhor_compra' && (
+                      <span className="absolute top-2 right-2 flex items-center gap-1 bg-amber-400 text-amber-900 text-[10px] font-extrabold px-2 py-1 rounded-full shadow-md leading-none uppercase tracking-wide">
+                        ⭐ Melhor Compra
+                      </span>
+                    )}
+                    {product.badge === 'melhor_custo_beneficio' && (
+                      <span className="absolute top-2 right-2 flex items-center gap-1 bg-violet-600 text-white text-[10px] font-extrabold px-2 py-1 rounded-full shadow-md leading-none uppercase tracking-wide">
+                        💎 Custo-Benefício
+                      </span>
+                    )}
+                  </div>
                   <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-4">
                     {product.name}
                   </h3>

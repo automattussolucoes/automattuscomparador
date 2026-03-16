@@ -34,7 +34,8 @@ export interface Product {
   image: string;
   link: string;
   categoryId: string;
-  specs: Record<string, string>; // specId -> value
+  specs: Record<string, string>;
+  badge: 'melhor_compra' | 'melhor_custo_beneficio' | null;
 }
 
 interface AppState {
@@ -107,7 +108,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           image: p.image,
           link: p.link,
           categoryId: p.category_id,
-          specs: p.specs || {}
+          specs: p.specs || {},
+          badge: p.badge || null
         })),
         brands: (brandsRes.data || []).map(b => ({
           id: b.id,
@@ -287,7 +289,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       image: prod.image,
       link: prod.link,
       category_id: prod.categoryId,
-      specs: prod.specs
+      specs: prod.specs,
+      badge: prod.badge || null
     }]).select().single();
 
     if (error) console.error('Error adding product:', error);
@@ -300,7 +303,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           image: data.image,
           link: data.link,
           categoryId: data.category_id,
-          specs: data.specs || {}
+          specs: data.specs || {},
+          badge: data.badge || null
         }]
       }));
     }
@@ -324,7 +328,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           image: data.image,
           link: data.link,
           categoryId: data.category_id,
-          specs: data.specs || {}
+          specs: data.specs || {},
+          badge: data.badge || null
         } : p)
       }));
     }

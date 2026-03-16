@@ -615,6 +615,7 @@ function ProductsAdmin() {
   const [productTypeId, setProductTypeId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [specs, setSpecs] = useState<Record<string, string>>({});
+  const [badge, setBadge] = useState<'melhor_compra' | 'melhor_custo_beneficio' | ''>('');
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -647,16 +648,18 @@ function ProductsAdmin() {
         image: image || 'https://picsum.photos/seed/smart/400/400',
         link: link || '#',
         categoryId,
-        specs
+        specs,
+        badge: badge || null
       });
     } else {
       await addProduct({
         name,
-        price: '', // Preço removido da UI, mas mantido vazio para o banco
+        price: '',
         image: image || 'https://picsum.photos/seed/smart/400/400',
         link: link || '#',
         categoryId,
-        specs
+        specs,
+        badge: badge || null
       });
     }
 
@@ -671,6 +674,7 @@ function ProductsAdmin() {
     setProductTypeId('');
     setCategoryId('');
     setSpecs({});
+    setBadge('');
     setEditingProductId(null);
     setIsModalOpen(false);
   };
@@ -686,6 +690,7 @@ function ProductsAdmin() {
     setLink(prod.link);
     setCategoryId(prod.categoryId);
     setSpecs(prod.specs || {});
+    setBadge(prod.badge || '');
     setIsModalOpen(true);
   };
 
@@ -803,6 +808,19 @@ function ProductsAdmin() {
                       className="w-full h-10 pl-9 pr-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">SELO / DESTAQUE</label>
+                  <select
+                    value={badge}
+                    onChange={e => setBadge(e.target.value as any)}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Nenhum</option>
+                    <option value="melhor_compra">⭐ Melhor Compra</option>
+                    <option value="melhor_custo_beneficio">💎 Melhor Custo-Benefício</option>
+                  </select>
                 </div>
               </div>
 
