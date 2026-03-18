@@ -818,8 +818,8 @@ function ProductsAdmin() {
                     className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Nenhum</option>
-                    <option value="melhor_compra">⭐ Melhor Compra</option>
-                    <option value="melhor_custo_beneficio">💎 Melhor Custo-Benefício</option>
+                    <option value="melhor_compra">Melhor Compra</option>
+                    <option value="melhor_custo_beneficio">Melhor Custo-Benefício</option>
                   </select>
                 </div>
               </div>

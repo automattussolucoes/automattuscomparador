@@ -191,12 +191,12 @@ export default function App() {
                     />
                     {product.badge === 'melhor_compra' && (
                       <span className="absolute top-2 right-2 flex items-center gap-1 bg-amber-400 text-amber-900 text-[10px] font-extrabold px-2 py-1 rounded-full shadow-md leading-none uppercase tracking-wide">
-                        ⭐ Melhor Compra
+                        Melhor Compra
                       </span>
                     )}
                     {product.badge === 'melhor_custo_beneficio' && (
                       <span className="absolute top-2 right-2 flex items-center gap-1 bg-violet-600 text-white text-[10px] font-extrabold px-2 py-1 rounded-full shadow-md leading-none uppercase tracking-wide">
-                        💎 Custo-Benefício
+                        Custo-Benefício
                       </span>
                     )}
                   </div>
