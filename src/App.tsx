@@ -89,7 +89,7 @@ export default function App() {
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
       {/* Header */}
-      <header className="flex justify-center border-b border-solid border-[#020617] bg-[#020617] px-4 md:px-20 py-4">
+      <header className="flex justify-center border-b border-solid border-primary bg-primary px-4 md:px-20 py-4">
         <div className="relative flex items-center justify-center max-w-6xl w-full">
           <img src="/logo.png" alt="Automattus" className="h-4 md:h-6" />
           <a
