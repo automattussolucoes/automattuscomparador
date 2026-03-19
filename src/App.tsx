@@ -127,11 +127,16 @@ export default function App() {
             <h1 className="text-slate-900 dark:text-slate-100 tracking-tight font-bold leading-tight mb-4 text-xl md:text-2xl">
               Comparador de Produtos de Automação Residencial e Empresarial
             </h1>
+            {seoTitle && seoTitle !== 'Comparador de Produtos de Automação' && (
+              <h2 className="text-slate-500 dark:text-slate-400 font-medium text-base md:text-lg mb-4">
+                {seoTitle}
+              </h2>
+            )}
           </div>
 
           {seoDescription && (
             <div className="max-w-3xl mx-auto mb-10 text-center text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed bg-white dark:bg-slate-800/80 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-              <p>{seoDescription}</p>
+              <p className="whitespace-pre-wrap">{seoDescription}</p>
             </div>
           )}
 
