@@ -132,7 +132,7 @@ export default function App() {
           </div>
 
           {seoDescription && (
-            <div className="w-full mb-10 text-left text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
+            <div className="max-w-5xl mx-auto mb-10 text-left text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 p-6 md:p-8 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
               <p className="whitespace-pre-wrap">{seoDescription}</p>
             </div>
           )}
