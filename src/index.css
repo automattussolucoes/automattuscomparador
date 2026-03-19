@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #062C4E;
+  --color-primary: #00123F;
   --color-background-light: #f6f6f8;
   --color-background-dark: #101622;
   --font-display: "Inter", sans-serif;
@@ -10,10 +10,12 @@
 body {
   font-family: var(--font-display);
 }
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

@@ -5,12 +5,16 @@ export interface ProductType {
   id: string;
   name: string;
   icon: string;
+  description?: string;
+  seo_title?: string;
 }
 
 export interface Category {
   id: string;
   name: string;
   productTypeId: string;
+  description?: string;
+  seo_title?: string;
 }
 
 export interface Specification {
@@ -99,7 +103,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       set({
         productTypes: typesRes.data || [],
-        categories: (catsRes.data || []).map(c => ({ id: c.id, name: c.name, productTypeId: c.product_type_id })),
+        categories: (catsRes.data || []).map(c => ({ id: c.id, name: c.name, productTypeId: c.product_type_id, description: c.description, seo_title: c.seo_title })),
         specifications: (specsRes.data || []).map(s => ({ id: s.id, name: s.name, productTypeId: s.product_type_id, orderIndex: s.order_index })),
         products: (prodsRes.data || []).map(p => ({
           id: p.id,
@@ -185,13 +189,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   addCategory: async (cat) => {
     const { data, error } = await supabase.from('categories').insert([{
       name: cat.name,
-      product_type_id: cat.productTypeId
+      product_type_id: cat.productTypeId,
+      description: cat.description,
+      seo_title: cat.seo_title
     }]).select().single();
 
     if (error) console.error('Error adding category:', error);
     if (!error && data) {
       set((state) => ({
-        categories: [...state.categories, { id: data.id, name: data.name, productTypeId: data.product_type_id }]
+        categories: [...state.categories, { id: data.id, name: data.name, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title }]
       }));
     }
   },
@@ -200,12 +206,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     const updateData: any = {};
     if (cat.name) updateData.name = cat.name;
     if (cat.productTypeId) updateData.product_type_id = cat.productTypeId;
+    if (cat.description !== undefined) updateData.description = cat.description;
+    if (cat.seo_title !== undefined) updateData.seo_title = cat.seo_title;
 
     const { data, error } = await supabase.from('categories').update(updateData).eq('id', id).select().single();
     if (error) console.error('Error updating category:', error);
     if (!error && data) {
       set((state) => ({
-        categories: state.categories.map(c => c.id === id ? { id: data.id, name: data.name, productTypeId: data.product_type_id } : c)
+        categories: state.categories.map(c => c.id === id ? { id: data.id, name: data.name, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title } : c)
       }));
     }
   },

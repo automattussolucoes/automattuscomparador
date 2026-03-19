@@ -84,3 +84,12 @@ USING (bucket_id = 'product-images' AND auth.role() = 'authenticated');
 -- Allow authenticated users to delete their uploads
 CREATE POLICY "Auth Delete" ON storage.objects FOR DELETE 
 USING (bucket_id = 'product-images' AND auth.role() = 'authenticated');
+
+-- SEO columns for product types and categories
+ALTER TABLE product_types
+ADD COLUMN IF NOT EXISTS description text,
+ADD COLUMN IF NOT EXISTS seo_title text;
+
+ALTER TABLE categories
+ADD COLUMN IF NOT EXISTS description text,
+ADD COLUMN IF NOT EXISTS seo_title text;

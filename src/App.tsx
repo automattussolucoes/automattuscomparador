@@ -86,6 +86,23 @@ export default function App() {
     return true;
   });
 
+  const currentCategoryObj = categories.find(c => c.id === activeCategory);
+  const currentTypeObj = productTypes.find(pt => pt.id === activeType);
+
+  const seoTitle = currentCategoryObj?.seo_title || currentTypeObj?.seo_title || 'Comparador de Produtos de Automação';
+  const seoDescription = currentCategoryObj?.description || currentTypeObj?.description || '';
+
+  useEffect(() => {
+    if (seoTitle) document.title = seoTitle;
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute('content', seoDescription || 'Encontre e compare os melhores produtos de automação residencial e empresarial.');
+  }, [seoTitle, seoDescription]);
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
       {/* Header */}
@@ -106,11 +123,17 @@ export default function App() {
       <main className="flex flex-col items-center px-4 md:px-20 py-10 grow">
         <div className="max-w-6xl w-full">
           {/* Title Section */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h1 className="text-slate-900 dark:text-slate-100 tracking-tight font-bold leading-tight mb-4 text-xl md:text-2xl">
               Comparador de Produtos de Automação Residencial e Empresarial
             </h1>
           </div>
+
+          {seoDescription && (
+            <div className="max-w-3xl mx-auto mb-10 text-center text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed bg-white dark:bg-slate-800/80 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <p>{seoDescription}</p>
+            </div>
+          )}
 
           {/* Filters Section */}
           <div className="flex flex-col items-center gap-6 mb-12">

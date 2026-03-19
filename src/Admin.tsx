@@ -14,7 +14,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 flex flex-col">
-      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#020617] bg-[#020617] px-6 md:px-20 py-4">
+      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#00123F] bg-[#00123F] px-6 md:px-20 py-4">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="Automattus" className="h-4 md:h-6" />
@@ -69,6 +69,8 @@ function ProductTypesAdmin() {
   const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('Box');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [description, setDescription] = useState('');
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,9 +80,9 @@ function ProductTypesAdmin() {
     }
 
     if (editingTypeId) {
-      await updateProductType(editingTypeId, { name, icon });
+      await updateProductType(editingTypeId, { name, icon, seo_title: seoTitle, description });
     } else {
-      await addProductType({ name, icon });
+      await addProductType({ name, icon, seo_title: seoTitle, description });
     }
 
     resetForm();
@@ -89,6 +91,8 @@ function ProductTypesAdmin() {
   const resetForm = () => {
     setName('');
     setIcon('Box');
+    setSeoTitle('');
+    setDescription('');
     setEditingTypeId(null);
     setIsModalOpen(false);
   };
@@ -97,6 +101,8 @@ function ProductTypesAdmin() {
     setEditingTypeId(pt.id);
     setName(pt.name);
     setIcon(pt.icon || 'Box');
+    setSeoTitle(pt.seo_title || '');
+    setDescription(pt.description || '');
     setIsModalOpen(true);
   };
 
@@ -137,6 +143,28 @@ function ProductTypesAdmin() {
                   onChange={e => setName(e.target.value)}
                   placeholder="ex: Fechaduras"
                   className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TÍTULO SEO (Aba do Navegador)</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={e => setSeoTitle(e.target.value)}
+                  placeholder="ex: Comparar Fechaduras Inteligentes para Casa"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TEXTO INTRODUTÓRIO (SEO/Blog)</label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="ex: Veja as melhores fechaduras digitais..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary resize-y"
                 />
               </div>
 
@@ -215,6 +243,8 @@ function CategoriesAdmin() {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [productTypeId, setProductTypeId] = useState('');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [filterProductTypeId, setFilterProductTypeId] = useState('');
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -225,9 +255,9 @@ function CategoriesAdmin() {
     }
 
     if (editingCategoryId) {
-      await updateCategory(editingCategoryId, { name, productTypeId });
+      await updateCategory(editingCategoryId, { name, productTypeId, seo_title: seoTitle, description });
     } else {
-      await addCategory({ name, productTypeId });
+      await addCategory({ name, productTypeId, seo_title: seoTitle, description });
     }
 
     resetForm();
@@ -236,6 +266,8 @@ function CategoriesAdmin() {
   const resetForm = () => {
     setName('');
     setProductTypeId('');
+    setSeoTitle('');
+    setDescription('');
     setEditingCategoryId(null);
     setIsModalOpen(false);
   };
@@ -244,6 +276,8 @@ function CategoriesAdmin() {
     setEditingCategoryId(cat.id);
     setName(cat.name);
     setProductTypeId(cat.productTypeId);
+    setSeoTitle(cat.seo_title || '');
+    setDescription(cat.description || '');
     setIsModalOpen(true);
   };
 
@@ -316,6 +350,28 @@ function CategoriesAdmin() {
                   onChange={e => setName(e.target.value)}
                   placeholder="ex: Wi-Fi"
                   className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TÍTULO SEO (Aba do Navegador)</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={e => setSeoTitle(e.target.value)}
+                  placeholder="ex: Fechaduras Inteligentes Wi-Fi para Casa"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TEXTO INTRODUTÓRIO (SEO/Blog)</label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="ex: Modelos Wi-Fi se conectam direto ao roteador..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary resize-y"
                 />
               </div>
 
