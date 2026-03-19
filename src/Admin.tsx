@@ -4,6 +4,10 @@ import { useAppStore } from './store';
 import { Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, Link as LinkIcon, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { iconMap } from './App';
 
+const slugify = (text: string) => {
+  return text.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+};
+
 export default function Admin() {
   const location = useLocation();
   const { fetchData } = useAppStore();
@@ -68,21 +72,28 @@ function ProductTypesAdmin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [icon, setIcon] = useState('Box');
   const [seoTitle, setSeoTitle] = useState('');
   const [description, setDescription] = useState('');
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setName(val);
+    if (!editingTypeId) setSlug(slugify(val));
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) {
-      alert('Por favor, preencha o nome do tipo de produto.');
+    if (!name || !slug) {
+      alert('Por favor, preencha o nome e a URL amigável do tipo.');
       return;
     }
 
     if (editingTypeId) {
-      await updateProductType(editingTypeId, { name, icon, seo_title: seoTitle, description });
+      await updateProductType(editingTypeId, { name, slug, icon, seo_title: seoTitle, description });
     } else {
-      await addProductType({ name, icon, seo_title: seoTitle, description });
+      await addProductType({ name, slug, icon, seo_title: seoTitle, description });
     }
 
     resetForm();
@@ -90,6 +101,7 @@ function ProductTypesAdmin() {
 
   const resetForm = () => {
     setName('');
+    setSlug('');
     setIcon('Box');
     setSeoTitle('');
     setDescription('');
@@ -100,6 +112,7 @@ function ProductTypesAdmin() {
   const openEditModal = (pt: any) => {
     setEditingTypeId(pt.id);
     setName(pt.name);
+    setSlug(pt.slug || '');
     setIcon(pt.icon || 'Box');
     setSeoTitle(pt.seo_title || '');
     setDescription(pt.description || '');
@@ -140,8 +153,19 @@ function ProductTypesAdmin() {
                 <input
                   type="text"
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={handleNameChange}
                   placeholder="ex: Fechaduras"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">URL AMIGÁVEL (SLUG)</label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={e => setSlug(e.target.value)}
+                  placeholder="ex: fechaduras-inteligentes"
                   className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -242,22 +266,29 @@ function CategoriesAdmin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [productTypeId, setProductTypeId] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [description, setDescription] = useState('');
   const [filterProductTypeId, setFilterProductTypeId] = useState('');
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setName(val);
+    if (!editingCategoryId) setSlug(slugify(val));
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !productTypeId) {
-      alert('Por favor, preencha o nome e selecione o tipo de produto.');
+    if (!name || !slug || !productTypeId) {
+      alert('Por favor, preencha o nome, URL amigável e selecione o tipo.');
       return;
     }
 
     if (editingCategoryId) {
-      await updateCategory(editingCategoryId, { name, productTypeId, seo_title: seoTitle, description });
+      await updateCategory(editingCategoryId, { name, slug, productTypeId, seo_title: seoTitle, description });
     } else {
-      await addCategory({ name, productTypeId, seo_title: seoTitle, description });
+      await addCategory({ name, slug, productTypeId, seo_title: seoTitle, description });
     }
 
     resetForm();
@@ -265,6 +296,7 @@ function CategoriesAdmin() {
 
   const resetForm = () => {
     setName('');
+    setSlug('');
     setProductTypeId('');
     setSeoTitle('');
     setDescription('');
@@ -275,6 +307,7 @@ function CategoriesAdmin() {
   const openEditModal = (cat: any) => {
     setEditingCategoryId(cat.id);
     setName(cat.name);
+    setSlug(cat.slug || '');
     setProductTypeId(cat.productTypeId);
     setSeoTitle(cat.seo_title || '');
     setDescription(cat.description || '');
@@ -347,8 +380,19 @@ function CategoriesAdmin() {
                 <input
                   type="text"
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={handleNameChange}
                   placeholder="ex: Wi-Fi"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">URL AMIGÁVEL (SLUG)</label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={e => setSlug(e.target.value)}
+                  placeholder="ex: wi-fi"
                   className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>

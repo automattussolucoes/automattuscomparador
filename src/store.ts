@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase';
 export interface ProductType {
   id: string;
   name: string;
+  slug: string;
   icon: string;
   description?: string;
   seo_title?: string;
@@ -12,6 +13,7 @@ export interface ProductType {
 export interface Category {
   id: string;
   name: string;
+  slug: string;
   productTypeId: string;
   description?: string;
   seo_title?: string;
@@ -103,7 +105,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       set({
         productTypes: typesRes.data || [],
-        categories: (catsRes.data || []).map(c => ({ id: c.id, name: c.name, productTypeId: c.product_type_id, description: c.description, seo_title: c.seo_title })),
+        categories: (catsRes.data || []).map(c => ({ id: c.id, name: c.name, slug: c.slug, productTypeId: c.product_type_id, description: c.description, seo_title: c.seo_title })),
         specifications: (specsRes.data || []).map(s => ({ id: s.id, name: s.name, productTypeId: s.product_type_id, orderIndex: s.order_index })),
         products: (prodsRes.data || []).map(p => ({
           id: p.id,
@@ -189,6 +191,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   addCategory: async (cat) => {
     const { data, error } = await supabase.from('categories').insert([{
       name: cat.name,
+      slug: cat.slug,
       product_type_id: cat.productTypeId,
       description: cat.description,
       seo_title: cat.seo_title
@@ -197,7 +200,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (error) console.error('Error adding category:', error);
     if (!error && data) {
       set((state) => ({
-        categories: [...state.categories, { id: data.id, name: data.name, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title }]
+        categories: [...state.categories, { id: data.id, name: data.name, slug: data.slug, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title }]
       }));
     }
   },
@@ -205,6 +208,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateCategory: async (id, cat) => {
     const updateData: any = {};
     if (cat.name) updateData.name = cat.name;
+    if (cat.slug) updateData.slug = cat.slug;
     if (cat.productTypeId) updateData.product_type_id = cat.productTypeId;
     if (cat.description !== undefined) updateData.description = cat.description;
     if (cat.seo_title !== undefined) updateData.seo_title = cat.seo_title;
@@ -213,7 +217,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (error) console.error('Error updating category:', error);
     if (!error && data) {
       set((state) => ({
-        categories: state.categories.map(c => c.id === id ? { id: data.id, name: data.name, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title } : c)
+        categories: state.categories.map(c => c.id === id ? { id: data.id, name: data.name, slug: data.slug, productTypeId: data.product_type_id, description: data.description, seo_title: data.seo_title } : c)
       }));
     }
   },

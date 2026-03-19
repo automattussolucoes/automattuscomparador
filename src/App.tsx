@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Camera, Lightbulb, Thermometer, Power, Cpu, BarChart, Megaphone, AtSign, X, Box, Speaker, Tv, Shield, Zap, Wifi, Video, Smartphone, Home, Settings, Monitor, Router, Plug, Instagram, MessageCircle } from 'lucide-react';
 import { supabase } from './lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from './store';
 
 // Helper to map string icon names to Lucide components
@@ -11,10 +11,17 @@ export const iconMap: Record<string, React.ElementType> = {
 
 export default function App() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { productTypes, categories, specifications, products, brands, fetchData, isLoading } = useAppStore();
 
-  const [activeType, setActiveType] = useState('');
-  const [activeCategory, setActiveCategory] = useState('');
+  const activeTypeSlug = searchParams.get('tipo');
+  const activeCategorySlug = searchParams.get('categoria');
+
+  const currentTypeObj = productTypes.find(pt => pt.slug === activeTypeSlug) || productTypes[0];
+  const activeType = currentTypeObj?.id || '';
+
+  const currentCategoryObj = categories.find(c => c.slug === activeCategorySlug);
+  const activeCategory = currentCategoryObj?.id || '';
 
   const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState('contato@automattus.com.br');
@@ -29,10 +36,10 @@ export default function App() {
 
   // Set initial active type if not set
   useEffect(() => {
-    if (!activeType && productTypes.length > 0) {
-      setActiveType(productTypes[0].id);
+    if (!activeTypeSlug && productTypes.length > 0) {
+      setSearchParams({ tipo: productTypes[0].slug }, { replace: true });
     }
-  }, [productTypes, activeType]);
+  }, [productTypes, activeTypeSlug, setSearchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,9 +93,6 @@ export default function App() {
     return true;
   });
 
-  const currentCategoryObj = categories.find(c => c.id === activeCategory);
-  const currentTypeObj = productTypes.find(pt => pt.id === activeType);
-
   const seoTitle = currentCategoryObj?.seo_title || currentTypeObj?.seo_title || 'Comparador de Produtos de Automação';
   const seoDescription = currentCategoryObj?.description || currentTypeObj?.description || '';
 
@@ -101,7 +105,42 @@ export default function App() {
       document.head.appendChild(metaDescription);
     }
     metaDescription.setAttribute('content', seoDescription || 'Encontre e compare os melhores produtos de automação residencial e empresarial.');
-  }, [seoTitle, seoDescription]);
+
+    // JSON-LD Structured Data
+    let script = document.getElementById('seo-json-ld');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'seo-json-ld';
+      script.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(script);
+    }
+
+    const itemListElement = filteredProducts.map((p, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Product',
+        name: p.name,
+        image: p.image,
+        offers: {
+          '@type': 'Offer',
+          url: p.link,
+          priceCurrency: 'BRL',
+          price: p.price
+        }
+      }
+    }));
+
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: seoTitle,
+      description: seoDescription,
+      itemListElement
+    };
+
+    script.textContent = JSON.stringify(jsonLd);
+  }, [seoTitle, seoDescription, filteredProducts]);
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
@@ -151,8 +190,7 @@ export default function App() {
                     <button
                       key={pt.id}
                       onClick={() => {
-                        setActiveType(pt.id);
-                        setActiveCategory('');
+                        setSearchParams({ tipo: pt.slug });
                       }}
                       className={`flex h-8 items-center justify-center rounded-lg border px-3 text-xs font-medium transition-all ${activeType === pt.id
                         ? 'bg-primary border-primary text-white'
@@ -174,7 +212,11 @@ export default function App() {
                 </span>
                 <div className="flex flex-wrap justify-center gap-2">
                   <button
-                    onClick={() => setActiveCategory('')}
+                    onClick={() => {
+                      if (currentTypeObj) {
+                        setSearchParams({ tipo: currentTypeObj.slug });
+                      }
+                    }}
                     className={`flex h-8 items-center justify-center rounded-lg border px-3 text-xs font-medium transition-all ${activeCategory === ''
                       ? 'bg-slate-800 border-slate-800 text-white dark:bg-slate-200 dark:border-slate-200 dark:text-slate-900'
                       : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -185,7 +227,11 @@ export default function App() {
                   {activeCategories.map((cat) => (
                     <button
                       key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
+                      onClick={() => {
+                        if (currentTypeObj) {
+                          setSearchParams({ tipo: currentTypeObj.slug, categoria: cat.slug });
+                        }
+                      }}
                       className={`flex h-8 items-center justify-center rounded-lg border px-3 text-xs font-medium transition-all ${activeCategory === cat.id
                         ? 'bg-slate-800 border-slate-800 text-white dark:bg-slate-200 dark:border-slate-200 dark:text-slate-900'
                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
@@ -225,9 +271,9 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-4">
+                  <h2 className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-4">
                     {product.name}
-                  </h3>
+                  </h2>
                   <a
                     href={product.link}
                     target="_blank"
