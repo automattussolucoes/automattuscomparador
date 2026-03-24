@@ -67,7 +67,7 @@ function NavLink({ to, current, children }: { to: string, current: boolean, chil
 }
 
 function ProductTypesAdmin() {
-  const { productTypes, addProductType, updateProductType, deleteProductType } = useAppStore();
+  const { productTypes, addProductType, updateProductType, deleteProductType, reorderProductTypes } = useAppStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
@@ -118,6 +118,23 @@ function ProductTypesAdmin() {
     setDescription(pt.description || '');
     setIsModalOpen(true);
   };
+
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const sorted = [...productTypes].sort((a, b) => a.orderIndex - b.orderIndex);
+    if (direction === 'up' && index > 0) {
+      const temp = sorted[index];
+      sorted[index] = sorted[index - 1];
+      sorted[index - 1] = temp;
+      await reorderProductTypes(sorted.map(s => s.id));
+    } else if (direction === 'down' && index < sorted.length - 1) {
+      const temp = sorted[index];
+      sorted[index] = sorted[index + 1];
+      sorted[index + 1] = temp;
+      await reorderProductTypes(sorted.map(s => s.id));
+    }
+  };
+
+  const displayedProductTypes = [...productTypes].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -216,6 +233,104 @@ function ProductTypesAdmin() {
                 <button
                   type="button"
                   onClick={resetForm}
+                  className="h-10 px-6 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="h-10 px-8 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90"
+                >
+                  Salvar Tipo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-lg">{editingTypeId ? 'Editar Tipo de Produto' : 'Novo Tipo de Produto'}</h3>
+              <button
+                onClick={resetForm}
+                className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAdd} className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">NOME DO TIPO DE PRODUTO</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={handleNameChange}
+                  placeholder="ex: Fechaduras"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">URL AMIGÁVEL (SLUG)</label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={e => setSlug(e.target.value)}
+                  placeholder="ex: fechaduras-inteligentes"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TÍTULO SEO (Aba do Navegador)</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={e => setSeoTitle(e.target.value)}
+                  placeholder="ex: Comparar Fechaduras Inteligentes para Casa"
+                  className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">TEXTO INTRODUTÓRIO (SEO/Blog)</label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="ex: Veja as melhores fechaduras digitais..."
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-2">ÍCONE</label>
+                <div className="grid grid-cols-6 gap-2">
+                  {Object.entries(iconMap).map(([iconName, IconComponent]) => (
+                    <button
+                      key={iconName}
+                      type="button"
+                      onClick={() => setIcon(iconName)}
+                      className={`flex items-center justify-center h-12 rounded-lg border transition-all ${icon === iconName
+                        ? 'bg-primary/10 border-primary text-primary'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      title={iconName}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={resetForm}
                   className="h-10 px-6 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-600"
                 >
                   Cancelar
@@ -231,7 +346,7 @@ function ProductTypesAdmin() {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {productTypes.map(pt => {
+        {displayedProductTypes.map((pt, index) => {
           const IconComponent = iconMap[pt.icon] || iconMap['Box'];
           return (
             <div key={pt.id} className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
@@ -242,6 +357,22 @@ function ProductTypesAdmin() {
                 <span className="font-medium">{pt.name}</span>
               </div>
               <div className="flex items-center gap-2">
+                <div className="flex flex-col mr-2">
+                  <button
+                    onClick={() => handleMove(index, 'up')}
+                    disabled={index === 0}
+                    className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleMove(index, 'down')}
+                    disabled={index === displayedProductTypes.length - 1}
+                    className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                  >
+                    <ArrowDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
                 <button onClick={() => openEditModal(pt)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
                   <Edit className="w-4 h-4" />
                 </button>
@@ -261,7 +392,7 @@ function ProductTypesAdmin() {
 }
 
 function CategoriesAdmin() {
-  const { categories, productTypes, addCategory, updateCategory, deleteCategory } = useAppStore();
+  const { categories, productTypes, addCategory, updateCategory, deleteCategory, reorderCategories } = useAppStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -314,9 +445,30 @@ function CategoriesAdmin() {
     setIsModalOpen(true);
   };
 
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    if (!filterProductTypeId) return;
+    const sorted = categories
+      .filter(c => c.productTypeId === filterProductTypeId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+      
+    if (direction === 'up' && index > 0) {
+      const target = [...sorted];
+      const temp = target[index];
+      target[index] = target[index - 1];
+      target[index - 1] = temp;
+      await reorderCategories(target.map(c => c.id));
+    } else if (direction === 'down' && index < sorted.length - 1) {
+      const target = [...sorted];
+      const temp = target[index];
+      target[index] = target[index + 1];
+      target[index + 1] = temp;
+      await reorderCategories(target.map(c => c.id));
+    }
+  };
+
   const displayedCategories = filterProductTypeId
-    ? categories.filter(c => c.productTypeId === filterProductTypeId)
-    : categories;
+    ? categories.filter(c => c.productTypeId === filterProductTypeId).sort((a,b) => a.orderIndex - b.orderIndex)
+    : categories.sort((a,b) => a.orderIndex - b.orderIndex);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -438,7 +590,7 @@ function CategoriesAdmin() {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {displayedCategories.map(cat => {
+        {displayedCategories.map((cat, index) => {
           const pt = productTypes.find(p => p.id === cat.productTypeId);
           return (
             <div key={cat.id} className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
@@ -447,6 +599,24 @@ function CategoriesAdmin() {
                 <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-slate-500 dark:text-slate-400">{pt?.name || 'Desconhecido'}</span>
               </div>
               <div className="flex items-center gap-2">
+                {filterProductTypeId && (
+                  <div className="flex flex-col mr-2">
+                    <button
+                      onClick={() => handleMove(index, 'up')}
+                      disabled={index === 0}
+                      className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, 'down')}
+                      disabled={index === displayedCategories.length - 1}
+                      className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
                 <button onClick={() => openEditModal(cat)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
                   <Edit className="w-4 h-4" />
                 </button>
@@ -592,9 +762,27 @@ function BrandsAdmin() {
 }
 
 function SpecificationsAdmin() {
-  const { specifications, productTypes, addSpecification, deleteSpecification, reorderSpecifications } = useAppStore();
+  const { specifications, productTypes, addSpecification, updateSpecification, deleteSpecification, reorderSpecifications } = useAppStore();
   const [name, setName] = useState('');
   const [productTypeId, setProductTypeId] = useState('');
+  const [filterProductTypeId, setFilterProductTypeId] = useState('');
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSpecId, setEditingSpecId] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setName('');
+    setProductTypeId('');
+    setEditingSpecId(null);
+    setIsModalOpen(false);
+  };
+
+  const openEditModal = (spec: any) => {
+    setEditingSpecId(spec.id);
+    setName(spec.name);
+    setProductTypeId(spec.productTypeId);
+    setIsModalOpen(true);
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -602,16 +790,20 @@ function SpecificationsAdmin() {
       alert('Por favor, preencha o nome e selecione o tipo de produto.');
       return;
     }
-    await addSpecification({ name, productTypeId });
-    setName('');
+    if (editingSpecId) {
+      await updateSpecification(editingSpecId, { name, productTypeId });
+    } else {
+      await addSpecification({ name, productTypeId });
+    }
+    resetForm();
   };
 
   const handleMove = async (index: number, direction: 'up' | 'down') => {
-    if (!productTypeId) return;
+    if (!filterProductTypeId) return;
 
     // Sort items by orderIndex before trying to move them
     const specs = specifications
-      .filter(s => s.productTypeId === productTypeId)
+      .filter(s => s.productTypeId === filterProductTypeId)
       .sort((a, b) => a.orderIndex - b.orderIndex);
 
     if (direction === 'up' && index > 0) {
@@ -619,46 +811,81 @@ function SpecificationsAdmin() {
       const temp = targetSpecs[index];
       targetSpecs[index] = targetSpecs[index - 1];
       targetSpecs[index - 1] = temp;
-      await reorderSpecifications(productTypeId, targetSpecs.map(s => s.id));
+      await reorderSpecifications(filterProductTypeId, targetSpecs.map(s => s.id));
     } else if (direction === 'down' && index < specs.length - 1) {
       const targetSpecs = [...specs];
       const temp = targetSpecs[index];
       targetSpecs[index] = targetSpecs[index + 1];
       targetSpecs[index + 1] = temp;
-      await reorderSpecifications(productTypeId, targetSpecs.map(s => s.id));
+      await reorderSpecifications(filterProductTypeId, targetSpecs.map(s => s.id));
     }
   };
 
-  const displayedSpecs = productTypeId
-    ? specifications.filter(s => s.productTypeId === productTypeId).sort((a, b) => a.orderIndex - b.orderIndex)
+  const displayedSpecs = filterProductTypeId
+    ? specifications.filter(s => s.productTypeId === filterProductTypeId).sort((a, b) => a.orderIndex - b.orderIndex)
     : specifications.sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Especificações</h1>
-
-      <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-4 mb-8 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <select
-          value={productTypeId}
-          onChange={e => setProductTypeId(e.target.value)}
-          className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Especificações</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="h-10 px-6 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 flex items-center gap-2"
         >
-          <option value="">Selecione o Tipo de Produto</option>
+          <Plus className="w-4 h-4" /> Nova Especificação
+        </button>
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
+              <h3 className="font-bold text-lg">{editingSpecId ? 'Editar Especificação' : 'Nova Especificação'}</h3>
+              <button onClick={resetForm} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAdd} className="p-6 flex flex-col gap-4">
+              <select
+                value={productTypeId}
+                onChange={e => setProductTypeId(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Selecione o Tipo de Produto</option>
+                {productTypes.map(pt => (
+                  <option key={pt.id} value={pt.id}>{pt.name}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Nome da Especificação (ex: Botões)"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
+              />
+              <div className="mt-6 flex justify-end gap-3">
+                <button type="button" onClick={resetForm} className="h-10 px-6 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm">Cancelar</button>
+                <button type="submit" className="h-10 px-8 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90">Salvar Especificação</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-sm font-medium text-slate-500">Filtrar por Tipo (necessário para reordenar):</span>
+        <select
+          value={filterProductTypeId}
+          onChange={e => setFilterProductTypeId(e.target.value)}
+          className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">Todos os Tipos</option>
           {productTypes.map(pt => (
             <option key={pt.id} value={pt.id}>{pt.name}</option>
           ))}
         </select>
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Nome da Especificação (ex: Botões)"
-          className="flex-1 h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-primary"
-        />
-        <button type="submit" className="h-10 px-6 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 flex items-center gap-2 justify-center">
-          <Plus className="w-4 h-4" /> Adicionar
-        </button>
-      </form>
+      </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {displayedSpecs.map((spec, index) => {
@@ -670,7 +897,7 @@ function SpecificationsAdmin() {
                 <span className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-slate-500 dark:text-slate-400">{pt?.name || 'Desconhecido'}</span>
               </div>
               <div className="flex items-center gap-2">
-                {productTypeId && (
+                {filterProductTypeId && (
                   <div className="flex flex-col mr-2">
                     <button
                       onClick={() => handleMove(index, 'up')}
@@ -688,6 +915,9 @@ function SpecificationsAdmin() {
                     </button>
                   </div>
                 )}
+                <button onClick={() => openEditModal(spec)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
+                  <Edit className="w-4 h-4" />
+                </button>
                 <button onClick={() => deleteSpecification(spec.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -704,7 +934,8 @@ function SpecificationsAdmin() {
 }
 
 function ProductsAdmin() {
-  const { products, productTypes, categories, specifications, addProduct, updateProduct, deleteProduct, uploadImage } = useAppStore();
+  const { products, productTypes, categories, specifications, addProduct, updateProduct, deleteProduct, reorderProducts, uploadImage } = useAppStore();
+  const [filterCategoryId, setFilterCategoryId] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -794,6 +1025,31 @@ function ProductsAdmin() {
     setIsModalOpen(true);
   };
 
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    if (!filterCategoryId) return;
+    const sorted = products
+      .filter(p => p.categoryId === filterCategoryId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+      
+    if (direction === 'up' && index > 0) {
+      const target = [...sorted];
+      const temp = target[index];
+      target[index] = target[index - 1];
+      target[index - 1] = temp;
+      await reorderProducts(target.map(p => p.id));
+    } else if (direction === 'down' && index < sorted.length - 1) {
+      const target = [...sorted];
+      const temp = target[index];
+      target[index] = target[index + 1];
+      target[index + 1] = temp;
+      await reorderProducts(target.map(p => p.id));
+    }
+  };
+
+  const displayedProducts = filterCategoryId
+    ? products.filter(p => p.categoryId === filterCategoryId).sort((a,b) => a.orderIndex - b.orderIndex)
+    : products.sort((a,b) => a.orderIndex - b.orderIndex);
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -807,6 +1063,20 @@ function ProductsAdmin() {
         >
           <Plus className="w-4 h-4" /> Cadastrar Produto
         </button>
+      </div>
+
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-sm font-medium text-slate-500">Filtrar por Categoria (necessário p/ reordenar):</span>
+        <select
+          value={filterCategoryId}
+          onChange={e => setFilterCategoryId(e.target.value)}
+          className="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-primary"
+        >
+          <option value="">Todas</option>
+          {categories.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
       </div>
 
       {isModalOpen && (
@@ -962,7 +1232,7 @@ function ProductsAdmin() {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {products.map(prod => {
+        {displayedProducts.map((prod, index) => {
           const cat = categories.find(c => c.id === prod.categoryId);
           const pt = productTypes.find(p => p.id === cat?.productTypeId);
 
@@ -979,6 +1249,24 @@ function ProductsAdmin() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {filterCategoryId && (
+                  <div className="flex flex-col mr-2">
+                    <button
+                      onClick={() => handleMove(index, 'up')}
+                      disabled={index === 0}
+                      className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, 'down')}
+                      disabled={index === displayedProducts.length - 1}
+                      className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-0.5"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
                 <button onClick={() => openEditModal(prod)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors">
                   <Edit className="w-4 h-4" />
                 </button>
@@ -996,3 +1284,5 @@ function ProductsAdmin() {
     </div>
   );
 }
+
+

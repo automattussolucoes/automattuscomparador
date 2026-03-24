@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Camera, Lightbulb, Thermometer, Power, Cpu, BarChart, Megaphone, AtSign, X, Box, Speaker, Tv, Shield, Zap, Wifi, Video, Smartphone, Home, Settings, Monitor, Router, Plug, Instagram, MessageCircle } from 'lucide-react';
-import { supabase } from './lib/supabase';
+import { pb } from './lib/pocketbase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from './store';
 
@@ -45,40 +45,16 @@ export default function App() {
     e.preventDefault();
     setLoginError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setLoginError(error.message);
-    } else {
+    try {
+      await pb.admins.authWithPassword(email, password);
       setLoginSuccess(true);
       setTimeout(() => {
         setShowLogin(false);
         setLoginSuccess(false);
         navigate('/admin');
       }, 1000);
-    }
-  };
-
-  const handleSignUp = async () => {
-    setLoginError('');
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      setLoginError(error.message);
-    } else {
-      setLoginSuccess(true);
-      alert('Usuário criado com sucesso no Supabase! Verifique o e-mail se necessário.');
-      setTimeout(() => {
-        setShowLogin(false);
-        setLoginSuccess(false);
-        navigate('/admin');
-      }, 1000);
+    } catch (error: any) {
+      setLoginError(error.message || 'Erro ao realizar login');
     }
   };
 
@@ -92,6 +68,7 @@ export default function App() {
     if (activeCategory && p.categoryId !== activeCategory) return false;
     return true;
   });
+
 
   const seoTitle = currentCategoryObj?.seo_title || currentTypeObj?.seo_title || 'Comparador de Produtos de Automação';
   const seoDescription = currentCategoryObj?.description || currentTypeObj?.description || '';
@@ -140,6 +117,7 @@ export default function App() {
     };
 
     script.textContent = JSON.stringify(jsonLd);
+
   }, [seoTitle, seoDescription, filteredProducts]);
 
   return (
@@ -284,7 +262,7 @@ export default function App() {
                   </a>
                 </div>
 
-                <div className="p-4 flex flex-col gap-5 grow">
+                <ul className="p-4 flex flex-col gap-5 grow">
                   {specifications
                     .filter(s => s.productTypeId === activeType)
                     .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -292,17 +270,17 @@ export default function App() {
                       const value = product.specs[specDef.id];
                       if (!value) return null;
                       return (
-                        <div key={specDef.id} className="space-y-1">
-                          <p className="text-[10px] uppercase font-bold text-slate-400 tracking-tighter">
+                        <li key={specDef.id} className="space-y-1">
+                          <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-tighter">
                             {specDef.name}
-                          </p>
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          </span>
+                          <span className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                             {value}
-                          </p>
-                        </div>
+                          </span>
+                        </li>
                       );
                     })}
-                </div>
+                </ul>
               </div>
             ))}
             {filteredProducts.length === 0 && (
@@ -331,6 +309,7 @@ export default function App() {
               </div>
             </div>
           )}
+
 
           {/* WhatsApp CTA */}
           <div className="mt-12 w-full flex justify-center px-4">
